@@ -1,0 +1,176 @@
+﻿@using BlazoringAnimations.Shared
+@page "/"
+<div class="row text-center">
+    <div class="col-sm">
+        <h1>Calculate your golf handicap</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm">
+        <svg id="snake-svg" viewBox="0 0 350 500">
+        <defs>
+          <linearGradient
+                          inkscape:collect="always"
+                          id="linearGradient"
+                          x1="13"
+                          y1="193.49992"
+                          x2="307"
+                          y2="193.49992"
+                          gradientUnits="userSpaceOnUse">
+            <stop
+                  style="stop-color:#2B2D2F;"
+                  offset="0"
+                  id="stop876" />
+            <stop
+                  style="stop-color:#ff00ff;"
+                  offset="1"
+                  id="stop878" />
+          </linearGradient>
+        </defs>
+        <path id="snake" d="m 35 113, h 300, 
+        c 0 0, 10 1, 10 10, 
+        v 60,
+        c 0 0, 1 10, -10 10, 
+        h -300
+        c 0 0, -10 1, -10 10, 
+        v 57,
+        c 0 0, 0 10, 10 10,  
+        h 300,
+        c 0 0, 10 1, 10 10, 
+        v 55,
+        c 0 0, 1 10, -10 10, 
+        h -300,  
+        c 0 0, -6 1, -6 6, 
+        v 38,
+        c 0 0, 0 6, 6 6, 
+        h 57,
+        c 0 0, 6 -1, 5 -5, 
+        v -39, 
+        c 0 0, -1 -6, -6 -6, 
+        h -29" 
+></path>
+      </svg>
+        <form class="form" style="position: absolute;top:0px;">
+        <h4>Add new round</h4>
+            
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="par">Par:</label>
+                <input type="number" class="form-control fixed-width"  id="par" placeholder="Par" bind="@CurrentRound.Par" />
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="rating">Rating:</label>
+                <input type="number" class="form-control fixed-width" id="rating" placeholder="Rating" bind="@CurrentRound.RatingString" />
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="slope">Slope:</label>
+                <input type="number" class="form-control fixed-width" id="slope" placeholder="Slope" bind="@CurrentRound.Slope" />
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="score">Score:</label>
+                <input type="number" class="form-control fixed-width" id="score" placeholder="Score" bind="@CurrentRound.Score" />
+            </div>
+            <div class="form-group mx-sm-3 mb-2 justify-right" style="padding-top:3px;">
+                <button class="btn btn-primary" id="add" onclick="@AddRound">Add</button>
+            </div>
+            
+        </form>
+    </div>
+</div>
+<div style="position: absolute;top:550px;">
+    <div class="row">
+        <div class="col-sm">
+            <h4>Rounds added</h4>
+        </div>
+    </div>
+    <div class="row justify-center">
+        <div class="col-sm">
+            <table class="table table-bordered">
+                <tr>
+                    <th>Par</th>
+                    <th>Rating</th>
+                    <th>Slope</th>
+                    <th>Score</th>
+                    <th></th>
+                </tr>
+                @if (Rounds.Any())
+                {
+                    foreach (var round in Rounds)
+                    {
+                        <tr>
+                            <td>@round.Par</td>
+                            <td>@round.Rating</td>
+                            <td>@round.Slope</td>
+                            <td>@round.Score</td>
+                            <td><button class="btn btn-danger" onclick="@(() => RemoveRound(round))"><i class="oi oi-trash"></i></button></td>
+                        </tr>
+    
+                    }
+                }
+            </table>
+        </div>
+    </div>
+    <div class="row justify-center">
+        <div class="col-sm">
+            <div style="@ButtonStyle" onclick="@Calculate">
+                <div class="button">
+                    <div class="text">Calculate</div>
+                </div>
+                <div class="progress-bar"></div>
+                <svg id="button-svg" x="0px" y="0px"
+                     viewBox="0 0 25 30" style="enable-background:new 0 0 25 30;">
+                    <path class="check st0" d="M2,19.2C5.9,23.6,9.4,28,9.4,28L23,2" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    <button id="btnShowHandicap" style="display:none;" onclick="@ToggleShowHandicap" />
+    <div class="row text-center" style="@(ShowHandicap ? "" : "display:none;")">
+        <div class="col-sm">
+            <h1>Your handicap is: @CalculatedHandicap</h1>
+        </div>
+    </div>
+</div style="position: absolute;">
+@functions
+{
+    List<Round> Rounds { get; set; } = new List<Round>();
+    Round CurrentRound { get; set; } = new Round();
+    bool _isFirstRender = true;
+    bool ShowHandicap { get; set; }
+    double CalculatedHandicap { get; set; }
+    string ButtonStyle => $"position:relative;top:{(ShowHandicap ? "100px;" : "40px;")}";
+    protected override void OnAfterRender()
+    {
+        if (_isFirstRender)
+        {
+            _isFirstRender = false;
+            JSInterop.InitAnimations();
+        }
+
+    }
+    void RemoveRound(Round round)
+    {
+        ShowHandicap = false;
+        Rounds.Remove(round);
+    }
+    void ToggleShowHandicap()
+    {
+        ShowHandicap = !ShowHandicap;
+    }
+    void Calculate()
+    {
+        if (Rounds.Count < 5)
+        {
+            JSInterop.Alert("You have to enter at least 5 rounds to get a handicap score!");
+            return;
+        }
+        JSInterop.CalculateAnimation();
+        CalculatedHandicap = HandicapCalculator.GetHandicap(Rounds);
+    }
+    void AddRound()
+    {
+        ShowHandicap = false;
+        JSInterop.ResetAnimation();
+        Rounds.Add(CurrentRound);
+        CurrentRound = new Round();
+    }
+}
