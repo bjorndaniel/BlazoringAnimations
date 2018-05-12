@@ -91,10 +91,10 @@ Blazor.registerFunction('BlazoringAnimations.Client.JsInterop.InitAnimations', f
             }
         });
     }
+    //Horrible hack, but the only way I could get the path to find the defs. 
     document.getElementById('par').focus();
     var defs = document.getElementById('snake-svg').querySelector('defs');
     defs.innerHTML = "&nbsp;" + defs.innerHTML; 
-    // document.getElementById('snake').setAttribute('stroke', 'url(#linearGradient)');
 });
 
 
